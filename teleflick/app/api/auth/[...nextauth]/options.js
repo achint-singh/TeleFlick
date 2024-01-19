@@ -19,8 +19,8 @@ export const options = {
                     role: userRole,
                 };
             },
-            clientId: process.env.NEXT_PUBLIC_GITHUB_ID,
-            clientSecret: process.env.NEXT_PUBLIC_GITHUB_Secret
+            clientId: process.env.GITHUB_ID,
+            clientSecret: process.env.GITHUB_Secret
         }),
         GoogleProvider({
             profile(profile) {
@@ -33,8 +33,8 @@ export const options = {
                     role: userRole,
                 };
             },
-            clientId: process.env.NEXT_PUBLIC_GOOGLE_ID,
-            clientSecret: process.env.NEXT_PUBLIC_GOOGLE_Secret
+            clientId: process.env.GOOGLE_ID,
+            clientSecret: process.env.GOOGLE_Secret
         }),
     ],
     callbacks: {
