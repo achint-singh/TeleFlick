@@ -1,36 +1,39 @@
 // set up how you want people to authenticate with your application
-
-import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 
 export const options = {
     providers: [
-        GitHubProvider({
-            profile(profile) {
-                console.log("Profile GitHub: ", profile);
-
-                let userRole = "GitHub User";
-                if (profile?. email == "achintsingh97@gmail.com") {
-                    userRole = "admin";
-                }
-
-                return {
-                    ...profile,
-                    role: userRole,
-                };
-            },
-            clientId: process.env.GITHUB_ID,
-            clientSecret: process.env.GITHUB_Secret
-        }),
         GoogleProvider({
-            profile(profile) {
+            async profile(profile) {
                 console.log("Profile Google: ", profile);
 
-                let userRole = "Google User";
+                const createTable = await client.sql`
+                CREATE TABLE IF NOT EXISTS users (
+                  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+                  name VARCHAR(255) NOT NULL,
+                  email VARCHAR(255) NOT NULL,
+                );
+              `;
+                
+                createTable();
+
+          
+              console.log(`Created "customers" table`);
+          
+            //   // Insert data into the "customers" table
+            //   const insertedCustomers = await Promise.all(
+            //     customers.map(
+            //       (customer) => client.sql`
+            //       INSERT INTO customers (id, name, email, image_url)
+            //       VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
+            //       ON CONFLICT (id) DO NOTHING;
+            //     `,
+            //     ),
+
+            //     const user = await sql<User>`SELECT * FROM users WHERE email=${email}`
                 return {
                     ...profile,
                     id: profile.sub,
-                    role: userRole,
                 };
             },
             clientId: process.env.GOOGLE_ID,
