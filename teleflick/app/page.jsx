@@ -6,7 +6,7 @@ const Home = async () => {
   const session = await getServerSession(options);
 
   if (!session) {
-    return <p> Hello, you're not signed in</p> ;
+    return <p>Hello, you&apos;re not signed in</p> ;
   }
 
   return (
