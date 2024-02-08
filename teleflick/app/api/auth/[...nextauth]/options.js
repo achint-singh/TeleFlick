@@ -4,10 +4,10 @@ import GoogleProvider from "next-auth/providers/google";
 export const options = {
     providers: [
         GoogleProvider({
-            async profile(profile) {
+            profile(profile) {
                 console.log("Profile Google: ", profile);
 
-                const createTable = await client.sql`
+                const createTable = client.sql`
                 CREATE TABLE IF NOT EXISTS users (
                   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
                   name VARCHAR(255) NOT NULL,
