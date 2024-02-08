@@ -1,24 +1,32 @@
 // set up how you want people to authenticate with your application
 import GoogleProvider from "next-auth/providers/google";
+import { sql, createPool } from '@vercel/postgres';
+
+const pool = createPool({
+    connectionString: process.env.DATABASE_URL,
+});
 
 export const options = {
     providers: [
         GoogleProvider({
-            profile(profile) {
+            async profile(profile) {
                 console.log("Profile Google: ", profile);
+                try {
+                    await sql`CREATE TABLE IF NOT EXISTS users ( id serial primary key, name varchar(255), email varchar(255) );`;
+                } catch (error) {
+                    console.log(error);
+                }
 
-                const createTable = client.sql`
-                CREATE TABLE IF NOT EXISTS users (
-                  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-                  name VARCHAR(255) NOT NULL,
-                  email VARCHAR(255) NOT NULL,
-                );
-              `;
-                
-                createTable();
+                // try {
+                //     sql`INSERT INTO users (name, email) 
+                //     SELECT '${profile.name}', '${profile.email}'
+                //     WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = '${profile.email}')
+                //     ON CONFLICT (email) DO NOTHING;`                    
+                //   } catch (error) {
+                //         console.log(error);
+                //   }
 
-          
-              console.log(`Created "customers" table`);
+            //   console.log(`Created "customers" table`);
           
             //   // Insert data into the "customers" table
             //   const insertedCustomers = await Promise.all(
@@ -48,6 +56,28 @@ export const options = {
         async session({session, token}) {
             if (session?.user) session.user.role = token.role;
             return session;
+        },
+        async signIn({ user, account, profile }) {
+            if (account.provider === 'google') {
+                // Extract user data from the Google profile
+                const { name, email } = profile;
+                // Insert the user into the database only if the email does not exist
+                try {
+                    const client = await pool.connect();
+                    const queryText = `
+                        INSERT INTO users (name, email)
+                        VALUES ($1, $2)
+                        ON CONFLICT (email) DO NOTHING;
+                    `;
+                    const queryValues = [name, email];
+                    await client.query(queryText, queryValues);
+                    client.release();
+                } catch (error) {
+                    console.error('Error inserting user into database:', error);
+                    // Handle error as needed
+                }
+            }
+            return true; // Return true to allow sign in
         }
     }
 };
